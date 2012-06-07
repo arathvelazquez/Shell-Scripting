@@ -97,54 +97,54 @@ hora=$(date);
 time_stamp=`date '+20%y%m%d_%H%M%S' `
 
 #Creating 2 logs. One for script execution and other one for building output.
-createLogsFolder 											#Create logs folder.
-app=$(echo $application | tr '[A-Z]' '[a-z]') 				#lowercase for log
-LOGBUILD=./logs/${application}_build_${workset}_${time_stamp}.log	#Build LOG
+createLogsFolder 								#Create logs folder.
+app=$(echo $application | tr '[A-Z]' '[a-z]') 					#lowercase for log
+LOGBUILD=./logs/${application}_build_${workset}_${time_stamp}.log		#Build LOG
 LOG=./logs/${app}_execution_${workset}_${time_stamp}.log			#Execution LOG
 
 #Building
-echo ''                                                 |tee $LOG
-echo 'Executing build for '$application                 |tee -a $LOG
-echo ''                                                 |tee -a $LOG
-echo 'Building new baseline to '$workset				|tee -a $LOG
+echo ''                                                 			|tee $LOG
+echo 'Executing build for '$application                 			|tee -a $LOG
+echo ''                                                 			|tee -a $LOG
+echo 'Building new baseline to '$workset					|tee -a $LOG
 
 hora=$(date);
-echo 'Time: ' $hora					                    |tee -a $LOG
-echo 'Saving log...' 			                        |tee -a $LOG
+echo 'Time: ' $hora					                    	|tee -a $LOG
+echo 'Saving log...' 			                        		|tee -a $LOG
 $build_command $workset 			          			|tee $LOGBUILD #./build.sh log
 hora=$(date);
-echo 'Saved at ' $hora                     				|tee -a $LOG
-echo 'Build execution has finished'                     |tee -a $LOG
+echo 'Saved at ' $hora                     					|tee -a $LOG
+echo 'Build execution has finished'                     			|tee -a $LOG
 
 #Validations
 cat $LOGBUILD | grep 'BUILD FAILED'
     if [ $? -eq 0 ] ; then
-			echo 'The build failed!'	      		    |tee -a $LOG 
+			echo 'The build failed!'	      		    	|tee -a $LOG 
 			mail $(whoami) < $LOG
 			exit 1
     else 
 			cat $LOGBUILD | grep "$build_grep"
 			if [ $? -eq 0 ] ; then 						 
-				echo 'Changing permissions....'         |tee -a $LOG
+				echo 'Changing permissions....'         	|tee -a $LOG
 				baseline_path=$(cat $LOGBUILD | grep "$build_grep" | cut -d ':' -f 2)
 				chmod -R 775 $baseline_path$build_subdir;
 				ls -l $baseline_path$build_subdir;		       
-				echo 'Permissions have been changed!'   |tee -a $LOG				
+				echo 'Permissions have been changed!'   	|tee -a $LOG				
 				#DEPLOY=true; #SOLO PARA PRUEBAS - YA es determinado por el parametro inicial
 			else
-				echo ''                                 |tee -a $LOG
-				echo ''                                 |tee -a $LOG
-				echo 'There is not enough data to proceed.' |tee -a $LOG
-				echo 'Exiting...'                       |tee -a $LOG
+				echo ''                                 		|tee -a $LOG
+				echo ''                                 		|tee -a $LOG
+				echo 'There is not enough data to proceed.' 		|tee -a $LOG
+				echo 'Exiting...'                       		|tee -a $LOG
 				#exit 1 			#Descomentar para PRODUCTION
 				#mail $(whoami) < $LOG
 			fi
     fi
 
 if [ "$DEPLOY" = true ]; then
-    echo 'It seems build was created correctly.'			|tee -a $LOG
+    echo 'It seems build was created correctly.'					|tee -a $LOG
 	echo '';
-	echo 'Do you want to continue with deployment?(y/n)'	|tee -a $LOG
+	echo 'Do you want to continue with deployment?(y/n)'				|tee -a $LOG
 	read deploy;
 		if [ "$deploy" = "y" ]; then
 			echo 'Could you please provide the Environment? Example: '$msg_environment; 
